@@ -7,7 +7,6 @@ describe('Test all to do actions', () => {
       let stateBefore = []
       let action = {
         type: 'ADD_TODO',
-        id: 0,
         text: 'hello'
       }
       let stateAfter = [
