@@ -4,6 +4,14 @@ import ReactDom from 'react-dom'
 // import { createStore } from 'redux'
 
 ReactDom.render(
-  <p>test</p>,
+  <div>
+    <form onsubmit={ (event) => {
+      event.preventDefault()
+
+    }} >
+      <input type="text"/>
+      <button>Add todo</button>
+    </form>
+  </div>,
   document.getElementById('root')
 )
