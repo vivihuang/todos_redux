@@ -1,13 +1,18 @@
-var gulp = require("gulp");
-var gutil = require("gulp-util");
-var webpack = require("webpack");
-var WebpackDevServer = require("webpack-dev-server");
-var webpackConfig = require("./webpack.config.js");
-var standard = require("gulp-standard")
-var del = require('del')
+import 'babel-register'
+import gulp from 'gulp'
+import gutil from "gulp-util"
+import webpack from "webpack"
+import WebpackDevServer from "webpack-dev-server"
+import webpackConfig from "./webpack.config.js"
+import standard from "gulp-standard"
+import del from 'del'
+import mocha from 'gulp-mocha'
+import istanbul from 'gulp-istanbul'
+var isparta = require('isparta')
 
 var paths = {
-  scripts: ['src/**/*.js','src/**/*.jsx']
+  scripts: ['src/**/*.js','src/**/*.jsx'],
+	test: ['src/test/**/*.js', 'src/test/**/*.jsx']
   //images: 'client/img/**/*'
 };
 
@@ -96,8 +101,27 @@ gulp.task("webpack-dev-server", function(callback) {
 		stats: {
 			colors: true
 		}
-	}).listen(3000, "localhost", function(err) {
+	}).listen(3000, "localhost", function (err) {
 		if(err) throw new gutil.PluginError("webpack-dev-server", err);
 		gutil.log("[webpack-dev-server]", "http://localhost:8080/webpack-dev-server/index.html");
 	});
+})
+
+gulp.task('pre-test', function () {
+  return gulp.src(paths.scripts)
+    // Covering files
+    .pipe(istanbul({instrumenter: isparta.Instrumenter}))
+    // Force `require` to return covered files
+    .pipe(istanbul.hookRequire())
 });
+
+gulp.task('test', ['pre-test'], function () {
+  return gulp.src(paths.test)
+    .pipe(mocha())
+    // Creating the reports after tests ran
+    .pipe(istanbul.writeReports())
+})
+
+gulp.task('watch-test',  function () {
+    gulp.watch(paths.test, ['test'])
+})
