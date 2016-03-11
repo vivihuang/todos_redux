@@ -10,6 +10,7 @@ import del from 'del'
 import mocha from 'gulp-mocha'
 import istanbul from 'gulp-istanbul'
 var isparta = require('isparta')
+import runSequence from 'run-sequence'
 
 var paths = {
   scripts: ['src/**/*.js','src/**/*.jsx'],
@@ -21,16 +22,15 @@ var paths = {
 gulp.task('clean', function() { return del(['src/dist']) })
 
 gulp.task('watch', function() {
-  gulp.watch(paths.scripts, ['standard'])
-  gulp.watch(paths.scripts, ["webpack:build-dev"])
+	gulp.watch(paths.scripts, () => { runSequence('webpack:build-dev', 'standard') })
 })
 
 // The development server (the recommended option for development)
 gulp.task("default", ["webpack-dev-server"])
 
-gulp.task("dev", ['clean', 'standard', "webpack:build-dev", 'watch'])
+gulp.task("dev", () => { runSequence('clean', "webpack:build-dev", 'standard', 'watch') })
 
-gulp.task("build", ['clean', 'standard', "webpack:build", 'uglify'])
+gulp.task("build", () => { runSequence('clean', 'standard', "webpack:build", 'uglify') })
 
 gulp.task("webpack:build", function(callback) {
 	// modify some webpack config options
@@ -53,12 +53,12 @@ gulp.task("webpack:build", function(callback) {
 		})) 
 		callback() 
 	}) 
-}) 
+})
 
 // modify some webpack config options
-var myDevConfig = Object.create(webpackConfig) 
-myDevConfig.devtool = "sourcemap" 
-myDevConfig.debug = true 
+var myDevConfig = Object.create(webpackConfig)
+myDevConfig.devtool = "sourcemap"
+myDevConfig.debug = true
 
 // create a single instance of the compiler to allow caching
 var devCompiler = webpack(myDevConfig) 
@@ -88,7 +88,7 @@ gulp.task('uglify', function() {
     .pipe(gulp.dest('src/dist'))
 })
 
-gulp.task("webpack-dev-server", function(callback) {
+gulp.task("webpack-dev-server", function() {
 	// modify some webpack config options
 	var myConfig = Object.create(webpackConfig) 
 	myConfig.devtool = "eval" 
