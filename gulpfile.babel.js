@@ -5,6 +5,7 @@ import webpack from "webpack"
 import WebpackDevServer from "webpack-dev-server"
 import webpackConfig from "./webpack.config.js"
 import standard from "gulp-standard"
+import uglify from 'gulp-uglify'
 import del from 'del'
 import mocha from 'gulp-mocha'
 import istanbul from 'gulp-istanbul'
@@ -12,7 +13,8 @@ var isparta = require('isparta')
 
 var paths = {
   scripts: ['src/**/*.js','src/**/*.jsx'],
-	test: ['src/test/**/*.js', 'src/test/**/*.jsx']
+	test: ['src/test/**/*.js', 'src/test/**/*.jsx'],
+	publicFiles: ['src/dist/*.js']
   //images: 'client/img/**/*'
 } 
 
@@ -28,7 +30,7 @@ gulp.task("default", ["webpack-dev-server"])
 
 gulp.task("dev", ['clean', 'standard', "webpack:build-dev", 'watch'])
 
-gulp.task("build", ['clean', 'standard', "webpack:build"])
+gulp.task("build", ['clean', 'standard', "webpack:build", 'uglify'])
 
 gulp.task("webpack:build", function(callback) {
 	// modify some webpack config options
@@ -78,6 +80,12 @@ gulp.task('standard', function () {
     .pipe(standard.reporter('default', {
       breakOnError: false
     }))
+})
+
+gulp.task('uglify', function() {
+  return gulp.src(paths.publicFiles)
+    .pipe(uglify())
+    .pipe(gulp.dest('src/dist'))
 })
 
 gulp.task("webpack-dev-server", function(callback) {
