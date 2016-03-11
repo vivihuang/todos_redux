@@ -1,17 +1,18 @@
 var path = require("path");
 var webpack = require("webpack");
+var node_modules_dir = path.resolve(__dirname, 'node_modules');
+var app_dir = path.join(__dirname, 'src');
+
 module.exports = {
 	cache: true,
 	entry: {
-		//jquery: "./app/jquery",
-		//bootstrap: ["!bootstrap-webpack!./app/bootstrap/bootstrap.config.js", "./app/bootstrap"],
-		react: "./index.js"
+		app: "./src/index.js"
 	},
 	output: {
-		path: path.join(__dirname, "dist"),
-		publicPath: "/static/",
-		filename: "bundle.js",
-		chunkFilename: "vendor.js"
+		path: path.join(__dirname, 'src', "dist"),
+		publicPath: "/public/",
+		filename: "bundle.js"
+    // chunkFilename: "bundle-[hash].js"
 	},
 	module: {
 		loaders: [
@@ -25,31 +26,20 @@ module.exports = {
 			{ test: /\.svg$/,    loader: "file-loader?prefix=font/" },
 
 			// required for react jsx
-			{test: /\.js$/, exclude: /node_modules/, loader: "babel-loader"},
-			{test: /\.jsx$/, exclude: /node_modules/, loader: "babel-loader"}
+			{test: /\.js$/, exclude: [node_modules_dir], loader: "babel-loader"},
+			{test: /\.jsx$/, exclude: [node_modules_dir], loader: "babel-loader"}
 		]
 	},
 	resolve: {
-		alias: {
-			// Bind version of jquery
-			//jquery: "jquery-2.0.3",
-
-			// Bind version of jquery-ui
-			//"jquery-ui": "jquery-ui-1.10.3",
-
-			// jquery-ui doesn't contain a index file
-			// bind module to the complete module
-			//"jquery-ui-1.10.3$": "jquery-ui-1.10.3/ui/jquery-ui.js",
-		}
+		alias: { },
+		modulesDirectories: ['node_modules']
 	},
 	plugins: [
-		//new webpack.ProvidePlugin({
-			// Automtically detect jQuery and $ as free var in modules
-			// and inject the jquery library
-			// This is required by many jquery plugins
-		//	jQuery: "jquery",
-		//	$: "jquery"
-		//}),
+		new webpack.optimize.CommonsChunkPlugin({name: "vendor", filename: "vendor.js",
+				minChunks: (module, count) => {
+					return module.resource && module.resource.indexOf(app_dir) === -1;
+				}
+		}),
 		new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.HotModuleReplacementPlugin()
 	]

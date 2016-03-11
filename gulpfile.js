@@ -3,6 +3,23 @@ var gutil = require("gulp-util");
 var webpack = require("webpack");
 var WebpackDevServer = require("webpack-dev-server");
 var webpackConfig = require("./webpack.config.js");
+var standard = require("gulp-standard")
+var del = require('del')
+
+var paths = {
+  scripts: ['src/**/*.js','src/**/*.jsx']
+  //images: 'client/img/**/*'
+};
+
+gulp.task('clean', function() {
+  // You can use multiple globbing patterns as you would with `gulp.src`
+  return del(['src/dist']);
+});
+
+gulp.task('watch', function() {
+  gulp.watch(paths.scripts, ['standard']);
+  gulp.watch(paths.scripts, ["webpack:build-dev"]);
+});
 
 // The development server (the recommended option for development)
 gulp.task("default", ["webpack-dev-server"]);
@@ -11,12 +28,10 @@ gulp.task("default", ["webpack-dev-server"]);
 // Advantage: No server required, can run app from filesystem
 // Disadvantage: Requests are not blocked until bundle is available,
 //               can serve an old app on refresh
-gulp.task("build-dev", ["webpack:build-dev"], function() {
-	gulp.watch(["./**/*"], ["webpack:build-dev"]);
-});
+gulp.task("dev", ['clean', 'standard', "webpack:build-dev", 'watch']);
 
 // Production build
-gulp.task("build", ["webpack:build"]);
+gulp.task("build", ['clean', 'standard', "webpack:build"]);
 
 gulp.task("webpack:build", function(callback) {
 	// modify some webpack config options
@@ -60,6 +75,14 @@ gulp.task("webpack:build-dev", function(callback) {
 		callback();
 	});
 });
+
+gulp.task('standard', function () {
+  return gulp.src([myDevConfig.entry.app])
+    .pipe(standard())
+    .pipe(standard.reporter('default', {
+      breakOnError: false
+    }))
+})
 
 gulp.task("webpack-dev-server", function(callback) {
 	// modify some webpack config options
